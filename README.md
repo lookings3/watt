@@ -23,7 +23,7 @@ Watt has no Dock icon. It appears in the menu bar.
 
 ## Language
 
-Watt is available in English and Korean. It follows your Mac's language and uses English unless that language is Korean. You can pick a language under the gear icon in the panel.
+Watt is available in English, Korean, German, and Japanese. It follows your Mac's language and falls back to English. You can pick a language under the gear icon in the panel.
 
 ## Low Power Mode permission
 

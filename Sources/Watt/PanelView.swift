@@ -7,9 +7,9 @@ enum Metric: String, CaseIterable, Identifiable {
     var unit: String { self == .percent ? "%" : self == .watts ? "W" : "°C" }
     var title: String {
         switch self {
-        case .percent: return L("잔량", "Level")
-        case .watts: return L("전력", "Power")
-        case .temperature: return L("온도", "Temp")
+        case .percent: return L("잔량", "Level", "Ladestand", "残量")
+        case .watts: return L("전력", "Power", "Leistung", "電力")
+        case .temperature: return L("온도", "Temp", "Temp.", "温度")
         }
     }
     var color: Color { self == .percent ? .green : self == .watts ? .orange : .red }
@@ -25,7 +25,7 @@ enum Metric: String, CaseIterable, Identifiable {
 enum Span: String, CaseIterable, Identifiable {
     case day = "24시간", week = "7일"
     var id: String { rawValue }
-    var title: String { self == .day ? L("24시간", "24h") : L("7일", "7d") }
+    var title: String { self == .day ? L("24시간", "24h", "24 Std.", "24時間") : L("7일", "7d", "7 Tage", "7日") }
     var seconds: TimeInterval { self == .day ? 86400 : 7 * 86400 }
     var step: Int { self == .day ? 5 : 30 } // minutes between chart samples
 }
@@ -65,13 +65,13 @@ struct PanelView: View {
             chart
             separator
             HStack {
-                Button(L("충전 한도 설정…", "Charge limit…")) { System.openBatterySettings() }
+                Button(L("충전 한도 설정…", "Charge limit…", "Ladelimit …", "充電上限…")) { System.openBatterySettings() }
                 Spacer()
-                Button(L("Watt 종료", "Quit Watt")) { NSApp.terminate(nil) }
+                Button(L("Watt 종료", "Quit Watt", "Watt beenden", "Wattを終了")) { NSApp.terminate(nil) }
                 Button { NotificationCenter.default.post(name: .wattOpenSettings, object: nil) } label: {
                     Image(systemName: "gearshape")
                 }
-                .help(L("설정", "Settings"))
+                .help(L("설정", "Settings", "Einstellungen", "設定"))
                 .padding(.leading, 6)
             }
             .buttonStyle(.plain)
@@ -108,7 +108,7 @@ struct PanelView: View {
     }
 
     private var headerDetail: String {
-        guard let s = model.snapshot else { return L("배터리 정보 없음", "No battery information") }
+        guard let s = model.snapshot else { return L("배터리 정보 없음", "No battery information", "Keine Batterieinformationen", "バッテリー情報がありません") }
         return s.timeText.isEmpty ? s.statusText : s.timeText
     }
 
@@ -125,7 +125,7 @@ struct PanelView: View {
                     .foregroundStyle(model.lowPower ? Color.black : Color.primary)
             }
             .frame(width: 26, height: 26)
-            Text(L("저전력 모드", "Low Power Mode")).font(.system(size: 13))
+            Text(L("저전력 모드", "Low Power Mode", "Stromsparmodus", "低電力モード")).font(.system(size: 13))
             Spacer()
             Toggle("", isOn: Binding(get: { model.lowPower }, set: { model.setLowPower($0) }))
                 .labelsHidden().toggleStyle(.switch).controlSize(.small).tint(.yellow)
@@ -143,9 +143,9 @@ struct PanelView: View {
 
     private var stats: some View {
         VStack(spacing: 5) {
-            row("thermometer.medium", tempColor, L("온도", "Temperature"), model.snapshot?.temperature.map { String(format: "%.1f °C", $0) })
-            row("heart.fill", .pink, L("최대 용량", "Maximum capacity"), model.snapshot?.healthPercent.map { String(format: "%.1f%%", $0) })
-            row("arrow.triangle.2.circlepath", .blue, L("사이클", "Cycles"), model.snapshot.map { "\($0.cycleCount) / \($0.designCycles)" })
+            row("thermometer.medium", tempColor, L("온도", "Temperature", "Temperatur", "温度"), model.snapshot?.temperature.map { String(format: "%.1f °C", $0) })
+            row("heart.fill", .pink, L("최대 용량", "Maximum capacity", "Maximale Kapazität", "最大容量"), model.snapshot?.healthPercent.map { String(format: "%.1f%%", $0) })
+            row("arrow.triangle.2.circlepath", .blue, L("사이클", "Cycles", "Ladezyklen", "充放電回数"), model.snapshot.map { "\($0.cycleCount) / \($0.designCycles)" })
         }
     }
 
@@ -191,7 +191,7 @@ struct PanelView: View {
 
             let data = points
             if data.count < 2 {
-                Text(L("기록을 모으는 중입니다", "Collecting history")).font(.caption).foregroundStyle(.secondary)
+                Text(L("기록을 모으는 중입니다", "Collecting history", "Verlauf wird gesammelt", "履歴を収集しています")).font(.caption).foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 90)
             } else {
                 Chart(data, id: \.date) { p in

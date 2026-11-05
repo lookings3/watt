@@ -65,7 +65,7 @@ Work like the macOS battery menu, and add power flow, temperature, and history.
 ### 2.7 Settings
 
 - The gear icon opens a small settings window.
-- Language: System, Korean, or English.
+- Language: System, Korean, English, German, or Japanese.
 - Open at login.
 - Restart automatically: reopens the app after a crash, but not after Quit Watt.
 - Both launch options share one user LaunchAgent, removed when both are off.
@@ -80,8 +80,8 @@ Work like the macOS battery menu, and add power flow, temperature, and history.
 
 ### 2.9 Language
 
-- Supports English and Korean.
-- System mode uses Korean on a Korean Mac and English otherwise.
+- Supports English, Korean, German, and Japanese.
+- System mode uses the Mac's language if supported, and English otherwise.
 - The panel applies a language change the next time it opens.
 
 ## 3. Out of scope

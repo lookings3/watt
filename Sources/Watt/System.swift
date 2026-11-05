@@ -43,7 +43,7 @@ enum System {
     }
 
     static func installRule() -> AdminResult {
-        guard let line = ruleLine else { return .failed(L("이 계정 이름으로는 권한을 설치할 수 없습니다.", "Can't install the permission for this account name.")) }
+        guard let line = ruleLine else { return .failed(L("이 계정 이름으로는 권한을 설치할 수 없습니다.", "Can't install the permission for this account name.", "Für diesen Accountnamen kann die Berechtigung nicht installiert werden.", "このアカウント名では権限をインストールできません。")) }
         return runAsAdmin("""
         T=$(/usr/bin/mktemp) && echo '\(line)' > "$T" && /usr/sbin/visudo -cf "$T" && \
         /usr/bin/install -m 440 -o root -g wheel "$T" \(ruleFile); R=$?; /bin/rm -f "$T"; exit $R
@@ -57,9 +57,9 @@ enum System {
         let r = run("/usr/bin/sudo", ["-n", "/usr/bin/pmset", "-a", "lowpowermode", on ? "1" : "0"])
         if r.status == 0 { return nil }
         if r.output.contains("password") {
-            return L("저전력 모드 권한이 없습니다. 스위치를 다시 켜서 권한을 설치하세요.", "Low Power Mode permission is missing. Turn the switch on again to install it.")
+            return L("저전력 모드 권한이 없습니다. 스위치를 다시 켜서 권한을 설치하세요.", "Low Power Mode permission is missing. Turn the switch on again to install it.", "Die Berechtigung für den Stromsparmodus fehlt. Schalte den Schalter erneut ein, um sie zu installieren.", "低電力モードの権限がありません。スイッチをもう一度オンにしてインストールしてください。")
         }
-        return L("저전력 모드 전환 실패: \(r.output.trimmingCharacters(in: .whitespacesAndNewlines))", "Couldn't change Low Power Mode: \(r.output.trimmingCharacters(in: .whitespacesAndNewlines))")
+        return L("저전력 모드 전환 실패: \(r.output.trimmingCharacters(in: .whitespacesAndNewlines))", "Couldn't change Low Power Mode: \(r.output.trimmingCharacters(in: .whitespacesAndNewlines))", "Stromsparmodus konnte nicht geändert werden: \(r.output.trimmingCharacters(in: .whitespacesAndNewlines))", "低電力モードを変更できませんでした: \(r.output.trimmingCharacters(in: .whitespacesAndNewlines))")
     }
 
     static func openBatterySettings() {

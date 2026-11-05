@@ -16,8 +16,8 @@ struct PowerBandsView: View {
         let color: Color
     }
 
-    private var charger: Tile { Tile(id: "charger", symbol: "powerplug.fill", title: snapshot.adapterWatts.map { "\($0) W" } ?? L("충전기", "Charger"), color: .primary) }
-    private var mac: Tile { Tile(id: "mac", symbol: "laptopcomputer", title: L("맥", "Mac"), color: .primary) }
+    private var charger: Tile { Tile(id: "charger", symbol: "powerplug.fill", title: snapshot.adapterWatts.map { "\($0) W" } ?? L("충전기", "Charger", "Netzteil", "充電器"), color: .primary) }
+    private var mac: Tile { Tile(id: "mac", symbol: "laptopcomputer", title: L("맥", "Mac", "Mac", "Mac"), color: .primary) }
     private var battery: Tile {
         Tile(id: "battery", symbol: snapshot.isCharging ? "battery.100percent.bolt" : "battery.75percent",
              title: "\(snapshot.percent)%", color: snapshot.isCharging ? .green : .primary)
@@ -40,11 +40,11 @@ struct PowerBandsView: View {
 
     private var statusLabel: (text: String, color: Color) {
         let f = snapshot.flow
-        if snapshot.isMeasuring { return (L("측정 중", "Measuring"), .secondary) }
-        if !snapshot.isExternal { return (L("방전 중", "Discharging"), .secondary) }
-        if f.toMacFromBattery > 0 { return (L("충전 중 소모", "Draining while plugged in"), .orange) }
-        if snapshot.isCharging { return (L("충전 중", "Charging"), .green) }
-        return (L("전원 사용", "On power adapter"), .secondary)
+        if snapshot.isMeasuring { return (L("측정 중", "Measuring", "Wird gemessen", "測定中"), .secondary) }
+        if !snapshot.isExternal { return (L("방전 중", "Discharging", "Entlädt", "放電中"), .secondary) }
+        if f.toMacFromBattery > 0 { return (L("충전 중 소모", "Draining while plugged in", "Entlädt trotz Netzteil", "接続中も消費"), .orange) }
+        if snapshot.isCharging { return (L("충전 중", "Charging", "Lädt", "充電中"), .green) }
+        return (L("전원 사용", "On power adapter", "Netzbetrieb", "電源使用中"), .secondary)
     }
 
     var body: some View {
@@ -55,7 +55,7 @@ struct PowerBandsView: View {
                 .fixedSize(horizontal: false, vertical: true)
             if let rated = snapshot.adapterWatts {
                 HStack {
-                    Label(L("충전기", "Charger"), systemImage: "powerplug.fill").foregroundStyle(.secondary)
+                    Label(L("충전기", "Charger", "Netzteil", "充電器"), systemImage: "powerplug.fill").foregroundStyle(.secondary)
                     Spacer()
                     Text(snapshot.inputWatts.map { String(format: "%.1f / %d W", $0, rated) } ?? "\(rated) W")
                         .monospacedDigit()
@@ -71,12 +71,12 @@ struct PowerBandsView: View {
     private var header: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 6) {
-                number(L("전력 사용량", "Power usage"), snapshot.isMeasuring ? L("측정 중", "Measuring") : String(format: "%.1f W", snapshot.flow.macWatts))
-                number(L("전류", "Current"), snapshot.isMeasuring ? L("측정 중", "Measuring") : String(format: "%.0f mA", abs(snapshot.amps) * 1000))
+                number(L("전력 사용량", "Power usage", "Stromverbrauch", "消費電力"), snapshot.isMeasuring ? L("측정 중", "Measuring", "Wird gemessen", "測定中") : String(format: "%.1f W", snapshot.flow.macWatts))
+                number(L("전류", "Current", "Stromstärke", "電流"), snapshot.isMeasuring ? L("측정 중", "Measuring", "Wird gemessen", "測定中") : String(format: "%.0f mA", abs(snapshot.amps) * 1000))
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 6) {
-                number(L("전압", "Voltage"), String(format: "%.2f V", snapshot.volts), trailing: true)
+                number(L("전압", "Voltage", "Spannung", "電圧"), String(format: "%.2f V", snapshot.volts), trailing: true)
                 Text(statusLabel.text).font(.callout.weight(.semibold)).foregroundStyle(statusLabel.color)
             }
         }
@@ -114,7 +114,7 @@ struct PowerBandsView: View {
                                                   rightTop: rightSlots[i].top, rightBottom: rightSlots[i].bottom)
                         shape.fill(band.color.opacity(0.16))
                         shape.stroke(Color.primary.opacity(0.14), lineWidth: 0.5)
-                        Text(snapshot.isMeasuring ? L("측정 중", "Measuring") : String(format: "%.1f W", band.watts))
+                        Text(snapshot.isMeasuring ? L("측정 중", "Measuring", "Wird gemessen", "測定中") : String(format: "%.1f W", band.watts))
                             .font(.system(size: 15, weight: .bold)).monospacedDigit()
                             .foregroundStyle(snapshot.isMeasuring ? Color.secondary : Color.primary)
                             .position(x: width / 2,

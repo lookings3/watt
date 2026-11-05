@@ -21,12 +21,12 @@ final class Model: ObservableObject {
         store.load { [weak self] in self?.history = $0 }
         guard var base = Battery.read() else { return }
         let steps: [(String, Bool, Bool, Bool, Double, Double, Double?)] = [
-            (L("배터리 사용", "On battery"), false, false, false, -7.5, 7.5, nil),
-            (L("충전 중", "Charging"), true, true, false, 27.3, 8.7, 36),
-            (L("전원 연결, 충전 안 함", "Plugged in, not charging"), true, false, false, 0, 9, 9.5),
-            (L("충전기 출력 부족", "Charger falls short"), true, false, false, -3.8, 7.6, 3.8),
-            (L("저전력 모드", "Low Power Mode"), false, false, true, -4.2, 4.2, nil),
-            (L("측정 중", "Measuring"), false, false, false, 0, 0, nil),
+            (L("배터리 사용", "On battery", "Batteriebetrieb", "バッテリー使用中"), false, false, false, -7.5, 7.5, nil),
+            (L("충전 중", "Charging", "Lädt", "充電中"), true, true, false, 27.3, 8.7, 36),
+            (L("전원 연결, 충전 안 함", "Plugged in, not charging", "Angeschlossen, lädt nicht", "電源接続、充電停止中"), true, false, false, 0, 9, 9.5),
+            (L("충전기 출력 부족", "Charger falls short", "Netzteil reicht nicht aus", "充電器の出力不足"), true, false, false, -3.8, 7.6, 3.8),
+            (L("저전력 모드", "Low Power Mode", "Stromsparmodus", "低電力モード"), false, false, true, -4.2, 4.2, nil),
+            (L("측정 중", "Measuring", "Wird gemessen", "測定中"), false, false, false, 0, 0, nil),
         ]
         func show() {
             let step = steps[demoIndex % steps.count]
@@ -38,7 +38,7 @@ final class Model: ObservableObject {
             base.minutesRemaining = step.1 && !step.2 ? nil : 95
             lowPower = step.3
             snapshot = base
-            demoLabel = L("데모 \(demoIndex % steps.count == 0 ? steps.count : demoIndex % steps.count)/\(steps.count): \(step.0)", "Demo \(demoIndex % steps.count == 0 ? steps.count : demoIndex % steps.count)/\(steps.count): \(step.0)")
+            demoLabel = L("데모 \(demoIndex % steps.count == 0 ? steps.count : demoIndex % steps.count)/\(steps.count): \(step.0)", "Demo \(demoIndex % steps.count == 0 ? steps.count : demoIndex % steps.count)/\(steps.count): \(step.0)", "Demo \(demoIndex % steps.count == 0 ? steps.count : demoIndex % steps.count)/\(steps.count): \(step.0)", "デモ \(demoIndex % steps.count == 0 ? steps.count : demoIndex % steps.count)/\(steps.count): \(step.0)")
         }
         show()
         timers.append(.scheduledTimer(withTimeInterval: 5, repeats: true) { _ in show() })
@@ -93,7 +93,7 @@ final class Model: ObservableObject {
                     case .cancelled: proceed = false
                     case .failed(let reason):
                         proceed = false
-                        error = L("권한 설치 실패: \(reason)", "Couldn't install the permission: \(reason)")
+                        error = L("권한 설치 실패: \(reason)", "Couldn't install the permission: \(reason)", "Berechtigung konnte nicht installiert werden: \(reason)", "権限をインストールできませんでした: \(reason)")
                     }
                 }
             }
@@ -110,10 +110,10 @@ final class Model: ObservableObject {
     private func askToInstallRule() -> Bool {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
-        alert.messageText = L("저전력 모드 권한이 필요합니다", "Low Power Mode needs permission")
-        alert.informativeText = L("macOS는 저전력 모드를 바꿀 때 관리자 권한을 요구합니다. 한 번만 설치하면 저전력 모드 켜기/끄기 두 명령만 비밀번호 없이 실행됩니다. 다음 창에 맥 비밀번호를 입력하세요.", "macOS requires administrator rights to change Low Power Mode. Install this once and only the two Low Power Mode on/off commands will run without a password. Enter your Mac password in the next window.")
-        alert.addButton(withTitle: L("계속", "Continue"))
-        alert.addButton(withTitle: L("취소", "Cancel"))
+        alert.messageText = L("저전력 모드 권한이 필요합니다", "Low Power Mode needs permission", "Stromsparmodus braucht eine Berechtigung", "低電力モードには権限が必要です")
+        alert.informativeText = L("macOS는 저전력 모드를 바꿀 때 관리자 권한을 요구합니다. 한 번만 설치하면 저전력 모드 켜기/끄기 두 명령만 비밀번호 없이 실행됩니다. 다음 창에 맥 비밀번호를 입력하세요.", "macOS requires administrator rights to change Low Power Mode. Install this once and only the two Low Power Mode on/off commands will run without a password. Enter your Mac password in the next window.", "macOS verlangt Administratorrechte, um den Stromsparmodus zu ändern. Nach einmaliger Installation laufen nur die beiden Befehle zum Ein- und Ausschalten ohne Passwort. Gib im nächsten Fenster dein Mac-Passwort ein.", "macOSでは低電力モードの変更に管理者権限が必要です。一度インストールすると、低電力モードのオン/オフの2つのコマンドだけがパスワードなしで実行されます。次のウインドウでMacのパスワードを入力してください。")
+        alert.addButton(withTitle: L("계속", "Continue", "Fortfahren", "続ける"))
+        alert.addButton(withTitle: L("취소", "Cancel", "Abbrechen", "キャンセル"))
         return alert.runModal() == .alertFirstButtonReturn
     }
 

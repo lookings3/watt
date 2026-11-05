@@ -126,6 +126,7 @@ func render(to dir: String) {
         func scenario(_ name: String, external: Bool, charging: Bool, watts: Double, load: Double, input: Double?) {
             s.isExternal = external; s.isCharging = charging; s.watts = watts; s.systemLoad = load
             s.inputWatts = input; s.adapterWatts = external ? 65 : nil; s.amps = watts / max(s.volts, 1)
+            s.percent = 72; s.minutesRemaining = 62 // Fixed sample values for screenshots.
             model.snapshot = s
             capture(name)
         }

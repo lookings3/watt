@@ -4,7 +4,7 @@ English | [한국어](README.ko.md) | [Deutsch](README.de.md) | [日本語](READ
 
 <img src="docs/screenshot.png" alt="Watt panel" width="360">
 
-A menu bar battery app for Apple silicon MacBooks. Watt shows battery level, power flow, temperature, battery health, and history charts, and lets you turn Low Power Mode on and off from the menu bar.
+A menu bar battery app for Apple silicon MacBooks. Watt shows battery level, power flow, temperature, battery health, and history charts, and lets you turn Low Power Mode on and off from the menu bar. Click the battery icon in the menu bar to open the panel.
 
 ## Requirements
 

@@ -64,8 +64,8 @@ enum LaunchAgent {
 /// Removes everything the app left on the system.
 enum Uninstaller {
     static var targets: [String] {
-        [L("저전력 모드 권한 (\(System.ruleFile))", "Low Power Mode permission (\(System.ruleFile))"), L("자동 실행 설정 (\(LaunchAgent.plist.path))", "Launch settings (\(LaunchAgent.plist.path))"),
-         L("기록 (\(Storage.directory.path))", "History (\(Storage.directory.path))"), L("앱 (\(Bundle.main.bundleURL.path) → 휴지통)", "App (\(Bundle.main.bundleURL.path) → Trash)")]
+        [L("저전력 모드 권한 (\(System.ruleFile))", "Low Power Mode permission (\(System.ruleFile))", "Berechtigung für Stromsparmodus (\(System.ruleFile))", "低電力モードの権限 (\(System.ruleFile))"), L("자동 실행 설정 (\(LaunchAgent.plist.path))", "Launch settings (\(LaunchAgent.plist.path))", "Starteinstellungen (\(LaunchAgent.plist.path))", "自動起動の設定 (\(LaunchAgent.plist.path))"),
+         L("기록 (\(Storage.directory.path))", "History (\(Storage.directory.path))", "Verlauf (\(Storage.directory.path))", "履歴 (\(Storage.directory.path))"), L("앱 (\(Bundle.main.bundleURL.path) → 휴지통)", "App (\(Bundle.main.bundleURL.path) → Trash)", "App (\(Bundle.main.bundleURL.path) → Papierkorb)", "アプリ (\(Bundle.main.bundleURL.path) → ゴミ箱)")]
     }
 
     private static var hasRule: Bool {
@@ -89,7 +89,7 @@ enum Uninstaller {
         do {
             try manager.trashItem(at: Bundle.main.bundleURL, resultingItemURL: nil)
         } catch {
-            trashError = L("앱을 휴지통으로 옮기지 못했습니다. 직접 휴지통에 넣어 주세요.", "Couldn't move the app to the Trash. Move it there yourself.")
+            trashError = L("앱을 휴지통으로 옮기지 못했습니다. 직접 휴지통에 넣어 주세요.", "Couldn't move the app to the Trash. Move it there yourself.", "Die App konnte nicht in den Papierkorb bewegt werden. Bitte bewege sie selbst dorthin.", "アプリをゴミ箱に移動できませんでした。手動でゴミ箱に入れてください。")
         }
         if let trashError { return trashError }
 
@@ -110,10 +110,10 @@ struct SettingsView: View {
     private func confirmUninstall() {
         let alert = NSAlert()
         alert.alertStyle = .critical
-        alert.messageText = L("Watt를 완전히 삭제할까요?", "Completely remove Watt?")
-        alert.informativeText = L("다음 항목을 지웁니다.\n\n", "This removes:\n\n") + Uninstaller.targets.map { "• \($0)" }.joined(separator: "\n")
-        alert.addButton(withTitle: L("삭제", "Remove"))
-        alert.addButton(withTitle: L("취소", "Cancel"))
+        alert.messageText = L("Watt를 완전히 삭제할까요?", "Completely remove Watt?", "Watt vollständig entfernen?", "Wattを完全に削除しますか?")
+        alert.informativeText = L("다음 항목을 지웁니다.\n\n", "This removes:\n\n", "Folgendes wird entfernt:\n\n", "次の項目を削除します。\n\n") + Uninstaller.targets.map { "• \($0)" }.joined(separator: "\n")
+        alert.addButton(withTitle: L("삭제", "Remove", "Entfernen", "削除"))
+        alert.addButton(withTitle: L("취소", "Cancel", "Abbrechen", "キャンセル"))
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         DispatchQueue.global(qos: .userInitiated).async {
             let error = Uninstaller.run()
@@ -123,21 +123,22 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Picker(L("언어", "Language"), selection: $language.setting) {
-                Text(L("시스템", "System")).tag(AppLanguage.system)
+            Picker(L("언어", "Language", "Sprache", "言語"), selection: $language.setting) {
+                Text(L("시스템", "System", "System", "システム")).tag(AppLanguage.system)
                 Text("한국어").tag(AppLanguage.korean)
                 Text("English").tag(AppLanguage.english)
+                Text("Deutsch").tag(AppLanguage.german)
+                Text("日本語").tag(AppLanguage.japanese)
             }
-            Toggle(L("로그인 시 열기", "Open at login"), isOn: Binding(get: { login }, set: { login = $0; LaunchAgent.setLogin($0) }))
+            Toggle(L("로그인 시 열기", "Open at login", "Beim Anmelden öffnen", "ログイン時に開く"), isOn: Binding(get: { login }, set: { login = $0; LaunchAgent.setLogin($0) }))
             VStack(alignment: .leading, spacing: 3) {
-                Toggle(L("자동으로 다시 실행", "Restart automatically"), isOn: Binding(get: { keep }, set: { keep = $0; LaunchAgent.setKeepAlive($0) }))
-                Text(L("앱이 비정상 종료되면 다시 켭니다. 바꾸면 앱이 잠깐 다시 시작됩니다.", "Reopens Watt if it crashes. Changing this restarts the app briefly."))
+                Toggle(L("자동으로 다시 실행", "Restart automatically", "Automatisch neu starten", "自動的に再起動"), isOn: Binding(get: { keep }, set: { keep = $0; LaunchAgent.setKeepAlive($0) }))
+                Text(L("앱이 비정상 종료되면 다시 켭니다. 바꾸면 앱이 잠깐 다시 시작됩니다.", "Reopens Watt if it crashes. Changing this restarts the app briefly.", "Öffnet Watt nach einem Absturz erneut. Beim Ändern startet die App kurz neu.", "Wattが異常終了すると再度開きます。変更するとアプリが一時的に再起動します。"))
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section {
-                Button(L("Watt 완전 삭제…", "Completely remove Watt…"), role: .destructive) { confirmUninstall() }
-                Text(L("휴지통에 버리면 권한과 기록이 남아요.",
-                       "Trashing the app leaves its permission and history behind."))
+                Button(L("Watt 완전 삭제…", "Completely remove Watt…", "Watt vollständig entfernen …", "Wattを完全に削除…"), role: .destructive) { confirmUninstall() }
+                Text(L("휴지통에 버리면 권한과 기록이 남아요.", "Trashing the app leaves its permission and history behind.", "Beim Löschen über den Papierkorb bleiben Berechtigung und Verlauf erhalten.", "ゴミ箱に入れるだけでは権限と履歴が残ります。"))
                     .font(.caption).foregroundStyle(.secondary)
                 if let uninstallError {
                     Text(uninstallError).font(.caption).foregroundStyle(.red)

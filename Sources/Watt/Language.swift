@@ -1,11 +1,11 @@
 import Foundation
 
 enum AppLanguage: String, CaseIterable, Identifiable {
-    case system, korean, english
+    case system, korean, english, german, japanese
     var id: String { rawValue }
 }
 
-/// Language setting. In system mode, anything other than Korean falls back to English.
+/// Language setting. In system mode, an unsupported language falls back to English.
 final class Language: ObservableObject {
     static let shared = Language()
 
@@ -20,17 +20,31 @@ final class Language: ObservableObject {
         setting = saved.flatMap(AppLanguage.init(rawValue:)) ?? .system
     }
 
-    var isKorean: Bool {
-        switch setting {
-        case .korean: return true
-        case .english: return false
-        case .system: return Locale.preferredLanguages.first?.hasPrefix("ko") ?? false
-        }
+    /// The language actually shown, never `.system`.
+    var resolved: AppLanguage {
+        guard setting == .system else { return setting }
+        let preferred = Locale.preferredLanguages.first ?? ""
+        if preferred.hasPrefix("ko") { return .korean }
+        if preferred.hasPrefix("de") { return .german }
+        if preferred.hasPrefix("ja") { return .japanese }
+        return .english
     }
 
-    var locale: Locale { Locale(identifier: isKorean ? "ko_KR" : "en_US") }
+    var locale: Locale {
+        switch resolved {
+        case .korean: return Locale(identifier: "ko_KR")
+        case .german: return Locale(identifier: "de_DE")
+        case .japanese: return Locale(identifier: "ja_JP")
+        default: return Locale(identifier: "en_US")
+        }
+    }
 }
 
-func L(_ korean: String, _ english: String) -> String {
-    Language.shared.isKorean ? korean : english
+func L(_ korean: String, _ english: String, _ german: String, _ japanese: String) -> String {
+    switch Language.shared.resolved {
+    case .korean: return korean
+    case .german: return german
+    case .japanese: return japanese
+    default: return english
+    }
 }

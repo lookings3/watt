@@ -20,15 +20,15 @@ struct BatterySnapshot {
     var adapterWatts: Int?          // charger rated output (W)
 
     var statusText: String {
-        if isCharging { return L("충전 중", "Charging") }
-        if isExternal { return fullyCharged ? L("전원 연결 · 완충", "Plugged in · Fully charged") : L("전원 연결 · 충전 안 함", "Plugged in · Not charging") }
-        return L("배터리 사용", "On battery")
+        if isCharging { return L("충전 중", "Charging", "Lädt", "充電中") }
+        if isExternal { return fullyCharged ? L("전원 연결 · 완충", "Plugged in · Fully charged", "Angeschlossen · Voll geladen", "電源接続 · 充電完了") : L("전원 연결 · 충전 안 함", "Plugged in · Not charging", "Angeschlossen · Lädt nicht", "電源接続 · 充電停止中") }
+        return L("배터리 사용", "On battery", "Batteriebetrieb", "バッテリー使用中")
     }
     var timeText: String {
         if isExternal && !isCharging { return "" }
-        guard let m = minutesRemaining else { return L("계산 중", "Calculating") }
-        let t = m >= 60 ? L("\(m / 60)시간 \(m % 60)분", "\(m / 60)h \(m % 60)m") : L("\(m)분", "\(m)m")
-        return isCharging ? L("완충까지 \(t)", "\(t) until full") : L("\(t) 남음", "\(t) left")
+        guard let m = minutesRemaining else { return L("계산 중", "Calculating", "Wird berechnet", "計算中") }
+        let t = m >= 60 ? L("\(m / 60)시간 \(m % 60)분", "\(m / 60)h \(m % 60)m", "\(m / 60) Std. \(m % 60) Min.", "\(m / 60)時間\(m % 60)分") : L("\(m)분", "\(m)m", "\(m) Min.", "\(m)分")
+        return isCharging ? L("완충까지 \(t)", "\(t) until full", "Voll in \(t)", "満充電まで\(t)") : L("\(t) 남음", "\(t) left", "Noch \(t)", "残り\(t)")
     }
 }
 
@@ -57,13 +57,13 @@ extension BatterySnapshot {
 
     var flowText: String {
         let f = flow
-        if isMeasuring { return L("전력을 측정하고 있어요. 1분 안에 값이 표시돼요", "Measuring power. A value will appear within a minute") }
-        if !isExternal { return L("배터리로 동작하고 있어요", "Running on battery") }
+        if isMeasuring { return L("전력을 측정하고 있어요. 1분 안에 값이 표시돼요", "Measuring power. A value will appear within a minute", "Leistung wird gemessen. Ein Wert erscheint innerhalb einer Minute", "電力を測定しています。1分以内に値が表示されます") }
+        if !isExternal { return L("배터리로 동작하고 있어요", "Running on battery", "Läuft mit Batterie", "バッテリーで動作しています") }
         if f.toMacFromBattery > 0 {
-            return String(format: L("전원이 연결돼 있지만 충전기 출력이 모자라 배터리가 %.1f W를 보태고 있어요", "Plugged in, but the charger falls short. The battery is adding %.1f W"), f.toMacFromBattery)
+            return String(format: L("전원이 연결돼 있지만 충전기 출력이 모자라 배터리가 %.1f W를 보태고 있어요", "Plugged in, but the charger falls short. The battery is adding %.1f W", "Angeschlossen, aber das Netzteil reicht nicht aus. Die Batterie liefert zusätzlich %.1f W", "電源に接続されていますが、充電器の出力が足りません。バッテリーが%.1f Wを補っています"), f.toMacFromBattery)
         }
-        if f.toBatteryFromAdapter > 0 { return String(format: L("충전기가 배터리에 %.1f W를 채우고 있어요", "The charger is adding %.1f W to the battery"), f.toBatteryFromAdapter) }
-        return L("충전기 전력으로 동작하고 배터리는 쉬고 있어요", "Running on the charger. The battery is resting")
+        if f.toBatteryFromAdapter > 0 { return String(format: L("충전기가 배터리에 %.1f W를 채우고 있어요", "The charger is adding %.1f W to the battery", "Das Netzteil lädt die Batterie mit %.1f W", "充電器がバッテリーに%.1f Wを充電しています"), f.toBatteryFromAdapter) }
+        return L("충전기 전력으로 동작하고 배터리는 쉬고 있어요", "Running on the charger. The battery is resting", "Läuft am Netzteil. Die Batterie ruht", "充電器で動作中です。バッテリーは使用していません")
     }
 }
 

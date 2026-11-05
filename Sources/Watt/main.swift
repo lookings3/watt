@@ -46,7 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             window.center()
             settingsWindow = window
         }
-        settingsWindow?.title = L("Watt 설정", "Watt Settings")
+        settingsWindow?.title = L("Watt 설정", "Watt Settings", "Watt-Einstellungen", "Wattの設定")
         NSApp.activate(ignoringOtherApps: true)
         settingsWindow?.makeKeyAndOrderFront(nil)
     }
@@ -57,7 +57,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         let dark = button.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
         button.image = batteryIcon(percent: s?.percent ?? 0, charging: s?.isCharging ?? false,
                                    plugged: (s?.isExternal ?? false) && !(s?.isCharging ?? false), lowPower: model.lowPower, dark: dark)
-        button.setAccessibilityTitle(s.map { L("배터리 \($0.percent)%", "Battery \($0.percent)%") } ?? L("배터리", "Battery"))
+        button.setAccessibilityTitle(s.map { L("배터리 \($0.percent)%", "Battery \($0.percent)%", "Batterie \($0.percent)%", "バッテリー \($0.percent)%") } ?? L("배터리", "Battery", "Batterie", "バッテリー"))
     }
 
     @objc private func togglePopover() {
@@ -81,7 +81,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 func dump() {
     if let s = Battery.read() { print(s) } else { print("battery: nil") }
     print("lowPower(ProcessInfo) =", System.lowPowerEnabled)
-    print("preferred =", Locale.preferredLanguages.first ?? "-", "korean =", Language.shared.isKorean)
+    print("preferred =", Locale.preferredLanguages.first ?? "-", "language =", Language.shared.resolved.rawValue)
 }
 
 /// For testing: saves the panel and icons as PNG files.
@@ -168,7 +168,7 @@ func render(to dir: String) {
 
 let args = CommandLine.arguments
 if let i = args.firstIndex(of: "--render-lang"), i + 1 < args.count {
-    Language.shared.setting = args[i + 1] == "en" ? .english : .korean
+    Language.shared.setting = ["ko": .korean, "en": .english, "de": .german, "ja": .japanese][args[i + 1]] ?? .english
 }
 if args.contains("--dump") { dump(); exit(0) }
 if args.contains("--uninstall-plan") { Uninstaller.targets.forEach { print($0) }; exit(0) }

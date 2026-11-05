@@ -1,6 +1,6 @@
 # Watt
 
-English | [한국어](README.ko.md)
+English | [한국어](README.ko.md) | [Deutsch](README.de.md) | [日本語](README.ja.md)
 
 <img src="docs/screenshot.png" alt="Watt panel" width="360">
 

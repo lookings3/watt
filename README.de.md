@@ -4,7 +4,7 @@
 
 <img src="docs/screenshot.png" alt="Watt-Panel" width="360">
 
-Eine Menüleisten-App für die Batterie von MacBooks mit Apple Silicon. Watt zeigt Ladestand, Energiefluss, Temperatur, Batteriezustand und Verlaufsdiagramme und schaltet den Stromsparmodus direkt in der Menüleiste ein und aus.
+Eine Menüleisten-App für die Batterie von MacBooks mit Apple Silicon. Watt zeigt Ladestand, Energiefluss, Temperatur, Batteriezustand und Verlaufsdiagramme und schaltet den Stromsparmodus direkt in der Menüleiste ein und aus. Klicke auf das Batteriesymbol in der Menüleiste, um das Panel zu öffnen.
 
 ## Voraussetzungen
 

@@ -1,0 +1,5 @@
+.build/
+.DS_Store
+Watt.app/
+dist/
+data/

@@ -136,6 +136,9 @@ struct SettingsView: View {
             }
             Section {
                 Button(L("Watt 완전 삭제…", "Completely remove Watt…"), role: .destructive) { confirmUninstall() }
+                Text(L("휴지통에 버리면 권한과 기록이 남아요.",
+                       "Trashing the app leaves its permission and history behind."))
+                    .font(.caption).foregroundStyle(.secondary)
                 if let uninstallError {
                     Text(uninstallError).font(.caption).foregroundStyle(.red)
                 }

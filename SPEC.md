@@ -21,7 +21,7 @@ Work like the macOS battery menu, and add power flow, temperature, and history.
 
 ### 2.2 Low Power Mode switch
 
-- Sits near the top of the panel.
+- A row below the level bar, with a round leaf icon and a switch. The icon, switch, and level bar turn yellow when it's on.
 - Manual only. There's no automatic switching by level or power source.
 - Runs `sudo -n /usr/bin/pmset -a lowpowermode 0|1`.
 - Uses a sudo rule that allows only those two commands without a password.
@@ -30,6 +30,8 @@ Work like the macOS battery menu, and add power flow, temperature, and history.
 - On failure, the switch returns to its real state and the panel shows the reason.
 
 ### 2.3 Panel information
+
+- The top of the panel is a large level bar with the percentage and remaining time inside it. A Low Power Mode row sits below it.
 
 | Item | Content |
 |---|---|

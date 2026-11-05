@@ -52,8 +52,7 @@ struct PanelView: View {
                 Text(demo).font(.caption.weight(.medium)).foregroundStyle(.purple).padding(.bottom, 6)
             }
             header
-            separator
-            lowPowerRow
+            lowPowerRow.padding(.top, 10)
             if let message = model.message {
                 Text(message).font(.caption).foregroundStyle(.red)
                     .fixedSize(horizontal: false, vertical: true).padding(.top, 6)
@@ -87,29 +86,46 @@ struct PanelView: View {
     private var separator: some View { Divider().padding(.vertical, 9) }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(L("배터리", "Battery")).font(.headline)
-                Spacer()
-                Text("\(model.snapshot?.percent ?? 0)%").font(.headline).monospacedDigit()
-            }
+        let shape = RoundedRectangle(cornerRadius: 11)
+        return ZStack(alignment: .leading) {
+            shape.fill(Color.primary.opacity(0.08))
             GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Color.primary.opacity(0.12))
-                    Capsule().fill(levelColor)
-                        .frame(width: geo.size.width * CGFloat(model.snapshot?.percent ?? 0) / 100)
+                shape.fill(levelColor.opacity(0.32))
+                    .frame(width: geo.size.width * CGFloat(model.snapshot?.percent ?? 0) / 100)
+            }
+            HStack(spacing: 5) {
+                Text("\(model.snapshot?.percent ?? 0)%")
+                    .font(.system(size: 20, weight: .semibold, design: .rounded)).monospacedDigit()
+                Spacer()
+                Text(headerDetail).font(.system(size: 12)).lineLimit(1).minimumScaleFactor(0.8)
+                if let symbol = headerSymbol {
+                    Image(systemName: symbol).font(.system(size: 11)).foregroundStyle(.green)
                 }
             }
-            .frame(height: 5)
-            Text(model.snapshot.map { [$0.statusText, $0.timeText].filter { !$0.isEmpty }.joined(separator: " · ") } ?? L("배터리 정보 없음", "No battery information"))
-                .font(.caption).foregroundStyle(.secondary)
+            .padding(.horizontal, 12)
         }
+        .frame(height: 42)
+    }
+
+    private var headerDetail: String {
+        guard let s = model.snapshot else { return L("배터리 정보 없음", "No battery information") }
+        return s.timeText.isEmpty ? s.statusText : s.timeText
+    }
+
+    private var headerSymbol: String? {
+        guard let s = model.snapshot else { return nil }
+        return s.isCharging ? "bolt.fill" : s.isExternal ? "powerplug.fill" : nil
     }
 
     private var lowPowerRow: some View {
-        HStack {
-            icon("leaf.fill", model.lowPower ? .yellow : .secondary)
-            Text(L("저전력 모드", "Low Power Mode")).font(.callout)
+        HStack(spacing: 9) {
+            ZStack {
+                Circle().fill(model.lowPower ? Color.yellow : Color.primary.opacity(0.12))
+                Image(systemName: "leaf.fill").font(.system(size: 11))
+                    .foregroundStyle(model.lowPower ? Color.black : Color.primary)
+            }
+            .frame(width: 26, height: 26)
+            Text(L("저전력 모드", "Low Power Mode")).font(.system(size: 13))
             Spacer()
             Toggle("", isOn: Binding(get: { model.lowPower }, set: { model.setLowPower($0) }))
                 .labelsHidden().toggleStyle(.switch).controlSize(.small).tint(.yellow)

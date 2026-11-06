@@ -44,6 +44,12 @@ Work like the macOS battery menu, and add power flow, temperature, and history.
 
 - Saves level, power, temperature, charging state, and Low Power Mode state every minute.
 - Charts level, power, or temperature over 24 hours or 7 days.
+- The time axis always covers the selected period, even with fewer records.
+- The 24-hour chart labels every 6 hours. The 7-day chart labels each weekday.
+- Points cover 15 minutes in the 24-hour chart and 2 hours in the 7-day chart. Level uses the last value, while power and temperature use the average.
+- Level stays one smooth line across periods without records, since it keeps existing while the Mac is idle. Only the time before the first record is shaded as No records.
+- Power and temperature break the line and shade those periods. Stretches of 4 hours or more in the 24-hour chart are labeled Not in use.
+- Power has a 0 W baseline. Temperature always spans at least 10 °C.
 - Deletes records after 30 days.
 
 ### 2.5 Charge limit

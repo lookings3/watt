@@ -27,7 +27,7 @@ enum Span: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String { self == .day ? L("24시간", "24h", "24 Std.", "24時間") : L("7일", "7d", "7 Tage", "7日") }
     var seconds: TimeInterval { self == .day ? 86400 : 7 * 86400 }
-    var step: Int { self == .day ? 5 : 30 } // minutes between chart samples
+    var bucket: TimeInterval { self == .day ? 900 : 7200 } // seconds in each chart point
 }
 
 struct PanelView: View {
@@ -158,21 +158,93 @@ struct PanelView: View {
         }
     }
 
-    private var points: [(date: Date, value: Double)] {
-        let cutoff = Date().addingTimeInterval(-span.seconds)
-        let recent = model.history.filter { $0.date >= cutoff }
-        var result: [(date: Date, value: Double)] = []
-        for (i, s) in recent.enumerated() where i % span.step == 0 || i == recent.count - 1 {
-            if let v = metric.value(s) { result.append((s.date, v)) }
+    private struct ChartPoint: Identifiable {
+        var id: Date { date }
+        let date: Date
+        let value: Double
+        let segment: Int
+    }
+
+    /// Groups records into fixed time buckets. A bucket without records starts a new line segment.
+    private func points(from start: Date) -> [ChartPoint] {
+        let size = span.bucket
+        var buckets: [Int: [Double]] = [:]
+        for s in model.history where s.date >= start {
+            guard let v = metric.value(s) else { continue }
+            buckets[Int(s.date.timeIntervalSince(start) / size), default: []].append(v)
         }
+        var result: [ChartPoint] = []
+        var segment = 0
+        var previous: Int?
+        for index in buckets.keys.sorted() {
+            let values = buckets[index]!
+            // Level keeps existing while the Mac is idle, so only power and temperature break.
+            if metric != .percent, let previous, index != previous + 1 { segment += 1 }
+            previous = index
+            let value = metric == .percent ? values.last! : values.reduce(0, +) / Double(values.count)
+            result.append(ChartPoint(date: start.addingTimeInterval((Double(index) + 0.5) * size), value: value, segment: segment))
+        }
+        return result
+    }
+
+    /// Stretches of the selected period without records, shown as shaded areas.
+    private func idleRanges(_ data: [ChartPoint], start: Date, end: Date) -> [(from: Date, to: Date)] {
+        let half = span.bucket / 2
+        var result: [(from: Date, to: Date)] = []
+        var edge = start
+        for p in data {
+            let from = p.date.addingTimeInterval(-half)
+            let beforeFirstRecord = edge == start
+            if (metric != .percent || beforeFirstRecord), from.timeIntervalSince(edge) >= span.bucket - 1 {
+                result.append((edge, from))
+            }
+            edge = p.date.addingTimeInterval(half)
+        }
+        if end.timeIntervalSince(edge) >= span.bucket { result.append((edge, end)) }
         return result
     }
 
     private func yDomain(_ values: [Double]) -> ClosedRange<Double> {
         if metric == .percent { return 0...100 }
-        let low = values.min() ?? 0, high = values.max() ?? 1
-        let pad = max((high - low) * 0.15, 0.5)
+        var low = values.min() ?? 0, high = values.max() ?? 1
+        if metric == .watts { low = min(low, 0); high = max(high, 0) }
+        if metric == .temperature, high - low < 10 {
+            let middle = (high + low) / 2
+            low = middle - 5; high = middle + 5
+        }
+        let pad = max((high - low) * 0.1, 0.5)
         return (low - pad)...(high + pad)
+    }
+
+    /// Midnights for grid lines, and where to put the labels.
+    private func xMarks(start: Date, end: Date) -> (grid: [Date], labels: [Date]) {
+        let calendar = Calendar.current
+        var grid: [Date] = []
+        var labels: [Date] = []
+        if span == .day {
+            var date = calendar.dateInterval(of: .hour, for: start)!.start
+            while date <= end {
+                if date >= start, calendar.component(.hour, from: date) % 6 == 0 { grid.append(date) }
+                date = date.addingTimeInterval(3600)
+            }
+            return (grid, grid)
+        }
+        var day = calendar.startOfDay(for: start)
+        while day < end {
+            let next = calendar.date(byAdding: .day, value: 1, to: day)!
+            if day >= start { grid.append(day) }
+            let from = max(day, start), to = min(next, end)
+            if to.timeIntervalSince(from) >= 6 * 3600 { labels.append(from.addingTimeInterval(to.timeIntervalSince(from) / 2)) }
+            day = next
+        }
+        return (grid, labels)
+    }
+
+    private func xLabel(_ date: Date) -> String {
+        let locale = Language.shared.locale
+        return span == .day
+            ? date.formatted(Date.FormatStyle().hour().locale(locale))
+            : date.formatted(Date.FormatStyle().weekday(.abbreviated).locale(locale))
     }
 
     private var chart: some View {
@@ -189,22 +261,66 @@ struct PanelView: View {
             .labelsHidden()
             .controlSize(.small)
 
-            let data = points
+            let end = Date()
+            let start = end.addingTimeInterval(-span.seconds)
+            let data = points(from: start)
             if data.count < 2 {
                 Text(L("기록을 모으는 중입니다", "Collecting history", "Verlauf wird gesammelt", "履歴を収集しています")).font(.caption).foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 90)
+                    .frame(maxWidth: .infinity, minHeight: 110)
             } else {
-                Chart(data, id: \.date) { p in
-                    AreaMark(x: .value("시간", p.date), yStart: .value("기준", yDomain(data.map(\.value)).lowerBound),
-                             yEnd: .value(metric.rawValue, p.value))
-                        .foregroundStyle(metric.color.opacity(0.15))
-                    LineMark(x: .value("시간", p.date), y: .value(metric.rawValue, p.value))
-                        .foregroundStyle(metric.color)
+                let domain = yDomain(data.map(\.value))
+                let base = metric == .watts ? 0 : domain.lowerBound
+                let marks = xMarks(start: start, end: end)
+                let lonely = Set(Dictionary(grouping: data, by: \.segment).filter { $0.value.count == 1 }.keys)
+                Chart {
+                    ForEach(idleRanges(data, start: start, end: end), id: \.from) { range in
+                        RectangleMark(xStart: .value("시작", range.from), xEnd: .value("끝", range.to))
+                            .foregroundStyle(Color.primary.opacity(0.09))
+                            .annotation(position: .overlay, alignment: .top, spacing: 4) {
+                                if span == .day, range.to.timeIntervalSince(range.from) >= 4 * 3600 {
+                                    Text(metric == .percent ? L("기록 없음", "No records", "Keine Daten", "記録なし")
+                                                            : L("사용 안 함", "Not in use", "Nicht benutzt", "未使用"))
+                                        .font(.system(size: 10)).foregroundStyle(.secondary).fixedSize()
+                                }
+                            }
+                    }
+                    if metric == .watts {
+                        RuleMark(y: .value("0", 0)).foregroundStyle(Color.primary.opacity(0.35))
+                    }
+                    ForEach(data) { p in
+                        AreaMark(x: .value("시간", p.date), yStart: .value("기준", base), yEnd: .value(metric.rawValue, p.value),
+                                 series: .value("구간", p.segment))
+                            .foregroundStyle(metric.color.opacity(0.15))
+                            .interpolationMethod(metric == .percent ? .monotone : .linear)
+                        LineMark(x: .value("시간", p.date), y: .value(metric.rawValue, p.value), series: .value("구간", p.segment))
+                            .foregroundStyle(metric.color)
+                            .interpolationMethod(metric == .percent ? .monotone : .linear)
+                        if lonely.contains(p.segment) {
+                            PointMark(x: .value("시간", p.date), y: .value(metric.rawValue, p.value))
+                                .symbolSize(10).foregroundStyle(metric.color)
+                        }
+                    }
                 }
-                .chartYScale(domain: yDomain(data.map(\.value)))
+                .chartXScale(domain: start...end)
+                .chartYScale(domain: domain)
+                .chartXAxis {
+                    AxisMarks(values: marks.grid) { _ in AxisGridLine() }
+                    AxisMarks(values: marks.labels) { value in
+                        if let date = value.as(Date.self) {
+                            AxisValueLabel(anchor: .top) { Text(xLabel(date)).fixedSize() }
+                        }
+                    }
+                }
+                .chartYAxis {
+                    if metric == .percent {
+                        AxisMarks(values: [0, 50, 100])
+                    } else {
+                        AxisMarks(values: .automatic(desiredCount: 3))
+                    }
+                }
                 .chartYAxisLabel(metric.unit)
                 .font(.caption2)
-                .frame(height: 90)
+                .frame(height: 110)
             }
         }
     }

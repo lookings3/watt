@@ -140,16 +140,16 @@ func render(to dir: String) {
         ("icon-72-light.png", 72, false, false, false), ("icon-72-dark.png", 72, false, false, true),
         ("icon-100.png", 100, false, false, true), ("icon-8.png", 8, false, false, true),
         ("icon-low.png", 45, false, true, true), ("icon-charging.png", 72, true, false, true),
-        ("icon-low-charging.png", 100, true, true, false), ("icon-plugged.png", 72, false, false, true),
+        ("icon-low-charging.png", 100, true, true, false), ("icon-plugged.png", 72, false, false, true), ("icon-low-96-light.png", 96, false, true, false), ("icon-96-light.png", 96, false, false, false), ("icon-low-100-light.png", 100, true, true, false), ("icon-charging-light.png", 72, true, false, false), ("icon-plugged-light.png", 72, false, false, false), ("icon-100-charging-light.png", 100, true, false, false), ("icon-low-charging-72-light.png", 72, true, true, false),
     ]
-    let w = 186, h = 84
+    let w = 150, h = 84
     for (name, level, charging, low, dark) in cases {
-        let image = batteryIcon(percent: level, charging: charging, plugged: name == "icon-plugged.png", lowPower: low, dark: dark)
+        let image = batteryIcon(percent: level, charging: charging, plugged: name.hasPrefix("icon-plugged"), lowPower: low, dark: dark)
         let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: w, pixelsHigh: h, bitsPerSample: 8, samplesPerPixel: 4,
                                    hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
         NSGraphicsContext.saveGraphicsState()
         NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
-        NSColor(white: dark ? 0.15 : 0.92, alpha: 1).setFill()
+        (dark ? NSColor(white: 0.15, alpha: 1) : NSColor(srgbRed: 0.776, green: 0.851, blue: 0.902, alpha: 1)).setFill()
         NSRect(x: 0, y: 0, width: w, height: h).fill()
         // The system tints template images, so tint white here to check them on a dark background.
         let tinted = NSImage(size: image.size, flipped: false) { r in

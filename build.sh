@@ -17,7 +17,7 @@ cat > Watt.app/Contents/Info.plist <<'P'
 <key>CFBundleName</key><string>Watt</string>
 <key>CFBundleExecutable</key><string>Watt</string>
 <key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleShortVersionString</key><string>1.1.1</string>
+<key>CFBundleShortVersionString</key><string>1.1.2</string>
 <key>LSMinimumSystemVersion</key><string>14.0</string>
 <key>LSUIElement</key><true/>
 <key>CFBundleIconFile</key><string>AppIcon</string>

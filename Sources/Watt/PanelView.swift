@@ -163,15 +163,19 @@ struct PanelView: View {
         let date: Date
         let value: Double
         let segment: Int
+        let charging: Bool
     }
 
     /// Groups records into fixed time buckets. A bucket without records starts a new line segment.
     private func points(from start: Date) -> [ChartPoint] {
         let size = span.bucket
         var buckets: [Int: [Double]] = [:]
+        var charging = Set<Int>()
         for s in model.history where s.date >= start {
             guard let v = metric.value(s) else { continue }
-            buckets[Int(s.date.timeIntervalSince(start) / size), default: []].append(v)
+            let index = Int(s.date.timeIntervalSince(start) / size)
+            buckets[index, default: []].append(v)
+            if s.charging { charging.insert(index) }
         }
         var result: [ChartPoint] = []
         var segment = 0
@@ -182,9 +186,27 @@ struct PanelView: View {
             if metric != .percent, let previous, index != previous + 1 { segment += 1 }
             previous = index
             let value = metric == .percent ? values.last! : values.reduce(0, +) / Double(values.count)
-            result.append(ChartPoint(date: start.addingTimeInterval((Double(index) + 0.5) * size), value: value, segment: segment))
+            result.append(ChartPoint(date: start.addingTimeInterval((Double(index) + 0.5) * size), value: value, segment: segment, charging: charging.contains(index)))
         }
         return result
+    }
+
+    /// Runs of level points recorded while charging. Each starts one point early so the rise is filled from its base.
+    private func chargeRuns(_ data: [ChartPoint]) -> [[ChartPoint]] {
+        guard metric == .percent else { return [] }
+        var runs: [[ChartPoint]] = []
+        var run: [ChartPoint] = []
+        for (i, p) in data.enumerated() {
+            if p.charging {
+                if run.isEmpty, i > 0 { run.append(data[i - 1]) }
+                run.append(p)
+            } else if !run.isEmpty {
+                runs.append(run)
+                run = []
+            }
+        }
+        if !run.isEmpty { runs.append(run) }
+        return runs.filter { $0.count > 1 }
     }
 
     /// Stretches of the selected period without records, shown as shaded areas.
@@ -227,7 +249,8 @@ struct PanelView: View {
                 if date >= start, calendar.component(.hour, from: date) % 6 == 0 { grid.append(date) }
                 date = date.addingTimeInterval(3600)
             }
-            return (grid, grid)
+            // A label too close to the edge would be cut off, so it keeps only its grid line.
+            return (grid, grid.filter { $0.timeIntervalSince(start) >= 2.5 * 3600 && end.timeIntervalSince($0) >= 2.5 * 3600 })
         }
         var day = calendar.startOfDay(for: start)
         while day < end {
@@ -271,6 +294,7 @@ struct PanelView: View {
                 let domain = yDomain(data.map(\.value))
                 let base = metric == .watts ? 0 : domain.lowerBound
                 let marks = xMarks(start: start, end: end)
+                let charges = chargeRuns(data)
                 let lonely = Set(Dictionary(grouping: data, by: \.segment).filter { $0.value.count == 1 }.keys)
                 Chart {
                     ForEach(idleRanges(data, start: start, end: end), id: \.from) { range in
@@ -286,6 +310,21 @@ struct PanelView: View {
                     }
                     if metric == .watts {
                         RuleMark(y: .value("0", 0)).foregroundStyle(Color.primary.opacity(0.35))
+                    }
+                    ForEach(Array(charges.enumerated()), id: \.offset) { i, run in
+                        ForEach(run) { p in
+                            AreaMark(x: .value("시간", p.date), yStart: .value("기준", base), yEnd: .value(metric.rawValue, p.value),
+                                     series: .value("충전", "charge-\(i)"))
+                                .foregroundStyle(Color.green.opacity(0.4))
+                                .interpolationMethod(.monotone)
+                        }
+                    }
+                    ForEach(Array(charges.enumerated()), id: \.offset) { _, run in
+                        PointMark(x: .value("시간", run[run.count / 2].date), y: .value(metric.rawValue, 9))
+                            .symbolSize(0)
+                            .annotation(position: .overlay) {
+                                Image(systemName: "bolt.fill").font(.system(size: 9, weight: .bold)).foregroundStyle(.white)
+                            }
                     }
                     ForEach(data) { p in
                         AreaMark(x: .value("시간", p.date), yStart: .value("기준", base), yEnd: .value(metric.rawValue, p.value),
@@ -319,6 +358,14 @@ struct PanelView: View {
                     }
                 }
                 .chartYAxisLabel(metric.unit)
+                .overlay(alignment: .topLeading) {
+                    if !charges.isEmpty {
+                        HStack(spacing: 4) {
+                            RoundedRectangle(cornerRadius: 2).fill(Color.green.opacity(0.55)).frame(width: 9, height: 9)
+                            Text(L("충전", "Charging", "Laden", "充電")).font(.system(size: 10)).foregroundStyle(.secondary)
+                        }
+                    }
+                }
                 .font(.caption2)
                 .frame(height: 110)
             }

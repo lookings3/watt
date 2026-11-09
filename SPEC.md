@@ -14,9 +14,9 @@ Work like the macOS battery menu, and add power flow, temperature, and history.
 
 ### 2.1 Menu bar icon
 
-- Shows a battery icon with the level inside it.
-- Shows a bolt while charging, and a plug when plugged in but not charging.
-- Turns yellow in Low Power Mode.
+- Shows a battery icon with the level inside it. Its size and digit weight match the macOS battery icon.
+- Shows a bolt while charging, and a plug when plugged in but not charging. The number and symbol shrink slightly while a symbol is shown so they don't crowd.
+- Turns yellow in Low Power Mode, with the level drawn in black so it stays readable on a light menu bar.
 - Reads Low Power Mode from the system, so changes made outside the app appear immediately.
 
 ### 2.2 Low Power Mode switch
@@ -48,6 +48,8 @@ Work like the macOS battery menu, and add power flow, temperature, and history.
 - The 24-hour chart labels every 6 hours. The 7-day chart labels each weekday.
 - Points cover 15 minutes in the 24-hour chart and 2 hours in the 7-day chart. Level uses the last value, while power and temperature use the average.
 - Level stays one smooth line across periods without records, since it keeps existing while the Mac is idle. Only the time before the first record is shaded as No records.
+- Level shades time spent charging in a stronger green, with a white bolt in each stretch and a small legend.
+- Time labels too close to either chart edge are hidden so they don't get cut off.
 - Power and temperature break the line and shade those periods. Stretches of 4 hours or more in the 24-hour chart are labeled Not in use.
 - Power has a 0 W baseline. Temperature always spans at least 10 °C.
 - Deletes records after 30 days.

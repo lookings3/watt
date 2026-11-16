@@ -14,6 +14,9 @@ final class MenuPanelController {
     var onOpen: () -> Void = {}
     var onClose: () -> Void = {}
     var isShown: Bool { window != nil }
+    /// True right after the panel closed, so the icon click that closed it doesn't reopen it.
+    var justClosed: Bool { Date().timeIntervalSince(closedAt) < 0.3 }
+    private var closedAt = Date.distantPast
 
     private var window: MenuWindow?
     private var host: NSHostingController<AnyView>?
@@ -65,6 +68,7 @@ final class MenuPanelController {
         self.window = nil
         host = nil
         button?.highlight(false)
+        closedAt = Date()
         onClose()
     }
 
@@ -112,6 +116,8 @@ final class MenuPanelController {
     /// Closes on a click elsewhere, the Escape key, or a Space change, like a menu.
     private func watchForDismissal() {
         if let global = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown], handler: { [weak self] _ in
+            // A click on the icon itself is left to the icon, which toggles the panel.
+            if let iconFrame = self?.button?.window?.frame, iconFrame.contains(NSEvent.mouseLocation) { return }
             self?.close()
         }) { monitors.append(global) }
         if let local = NSEvent.addLocalMonitorForEvents(matching: [.keyDown], handler: { [weak self] event in

@@ -2,10 +2,10 @@ import AppKit
 import SwiftUI
 import Combine
 
-final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate {
     let model = Model()
     private var item: NSStatusItem!
-    private let popover = NSPopover()
+    private let menu = MenuPanelController()
     private var bag = Set<AnyCancellable>()
     private var appearanceObservation: NSKeyValueObservation?
     private var settingsWindow: NSWindow?
@@ -16,8 +16,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         item.button?.action = #selector(togglePopover)
         item.button?.imagePosition = .imageOnly
 
-        popover.behavior = .transient
-        popover.delegate = self
+        menu.onOpen = { [weak self] in self?.model.panelOpened() }
 
         model.$snapshot.combineLatest(model.$lowPower)
             .receive(on: RunLoop.main)
@@ -31,14 +30,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         }
         if LaunchAgent.consumeReopenFlag() { openSettings() }
         if CommandLine.arguments.contains("--panel-test") { // For testing: opens the panel briefly, then closes it.
-            popover.behavior = .applicationDefined
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) { self.togglePopover() }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 18) { self.popover.performClose(nil) }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 18) { self.menu.close() }
         }
     }
 
     private func openSettings() {
-        popover.performClose(nil)
+        menu.close()
         if settingsWindow == nil {
             let window = NSWindow(contentViewController: NSHostingController(rootView: SettingsView()))
             window.styleMask = [.titled, .closable]
@@ -62,18 +60,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     @objc private func togglePopover() {
         guard let button = item.button else { return }
-        if popover.isShown {
-            popover.performClose(nil)
+        if menu.isShown {
+            menu.close()
         } else {
             // Builds the panel on open and releases it on close so nothing renders while it's closed.
-            popover.contentViewController = NSHostingController(rootView: PanelView(model: model))
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-            popover.contentViewController?.view.window?.makeKey()
+            menu.show(PanelView(model: model), below: button)
         }
-    }
-    func popoverDidShow(_ n: Notification) { model.panelOpened() }
-    func popoverDidClose(_ n: Notification) {
-        popover.contentViewController = nil
     }
 }
 

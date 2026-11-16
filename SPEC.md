@@ -31,6 +31,8 @@ Work like the macOS battery menu, and add power flow, temperature, and history.
 
 ### 2.3 Panel information
 
+- Opens like the macOS Wi-Fi and Bluetooth menus: no arrow, just below the menu bar, aligned to the icon's left edge and kept on screen.
+- Uses the system menu material with 18pt corners. It closes on a click elsewhere, the Escape key, or a Space change.
 - The top of the panel is a large level bar with the percentage and remaining time inside it. A Low Power Mode row sits below it.
 
 | Item | Content |

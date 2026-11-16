@@ -62,7 +62,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let button = item.button else { return }
         if menu.isShown {
             menu.close()
-        } else {
+        } else if !menu.justClosed {
             // Builds the panel on open and releases it on close so nothing renders while it's closed.
             menu.show(PanelView(model: model), below: button)
         }

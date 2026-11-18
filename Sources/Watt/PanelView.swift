@@ -133,28 +133,43 @@ struct PanelView: View {
         }
     }
 
-    private func icon(_ name: String, _ color: Color) -> some View {
-        Image(systemName: name).font(.system(size: 12)).foregroundStyle(color).frame(width: 18)
-    }
 
     @ViewBuilder private var powerSection: some View {
         if let s = model.snapshot { PowerBandsView(snapshot: s) }
     }
 
+    private var tempState: String? {
+        guard let t = model.snapshot?.temperature else { return nil }
+        if t >= 40 { return L("뜨거움", "Hot", "Heiß", "高温") }
+        if t >= 35 { return L("따뜻함", "Warm", "Warm", "やや高温") }
+        return L("정상", "Normal", "Normal", "正常")
+    }
+
+    /// Temperature large on the left, with capacity and cycles kept close together on the right.
     private var stats: some View {
-        VStack(spacing: 5) {
-            row("thermometer.medium", tempColor, L("온도", "Temperature", "Temperatur", "温度"), model.snapshot?.temperature.map { String(format: "%.1f °C", $0) })
-            row("heart.fill", .pink, L("최대 용량", "Maximum capacity", "Maximale Kapazität", "最大容量"), model.snapshot?.healthPercent.map { String(format: "%.1f%%", $0) })
-            row("arrow.triangle.2.circlepath", .blue, L("사이클", "Cycles", "Ladezyklen", "充放電回数"), model.snapshot.map { "\($0.cycleCount) / \($0.designCycles)" })
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: "thermometer.medium").font(.system(size: 22)).foregroundStyle(tempColor)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(L("온도", "Temperature", "Temperatur", "温度")).font(.caption).foregroundStyle(.secondary)
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text(model.snapshot?.temperature.map { String(format: "%.1f", $0) } ?? "-")
+                        .font(.system(size: 24, weight: .semibold)).monospacedDigit()
+                    Text("°C").font(.callout).foregroundStyle(.secondary)
+                }
+                Text(tempState ?? " ").font(.caption.weight(.medium)).foregroundStyle(tempColor)
+            }
+            Spacer(minLength: 8)
+            VStack(alignment: .trailing, spacing: 6) {
+                pair(L("최대 용량", "Max capacity", "Max. Kapazität", "最大容量"), model.snapshot?.healthPercent.map { String(format: "%.1f%%", $0) })
+                pair(L("사이클", "Cycles", "Ladezyklen", "充放電回数"), model.snapshot.map { "\($0.cycleCount)" })
+            }
         }
     }
 
-    private func row(_ symbol: String, _ color: Color, _ title: String, _ value: String?) -> some View {
-        HStack {
-            icon(symbol, color)
-            Text(title).font(.callout).foregroundStyle(.secondary)
-            Spacer()
-            Text(value ?? "-").font(.callout).monospacedDigit()
+    private func pair(_ title: String, _ value: String?) -> some View {
+        HStack(spacing: 6) {
+            Text(title).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+            Text(value ?? "-").font(.callout.weight(.medium)).monospacedDigit()
         }
     }
 

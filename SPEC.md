@@ -39,8 +39,8 @@ Work like the macOS battery menu, and add power flow, temperature, and history.
 |---|---|
 | Status | Charging, plugged in and not charging, or on battery |
 | Time | Time until full or empty |
-| Temperature | Battery temperature in °C |
-| Health | Maximum capacity and cycle count |
+| Temperature | Battery temperature in °C, shown large with a Normal, Warm (35 °C) or Hot (40 °C) label |
+| Health | Maximum capacity and cycle count, shown small beside the temperature |
 
 ### 2.4 History and charts
 

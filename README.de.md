@@ -56,9 +56,10 @@ Erfordert Xcode.
 ./build.sh
 ./make-dmg.sh
 ./demo.sh
+./preview.sh
 ```
 
-`build.sh` erstellt `Watt.app`, `make-dmg.sh` erstellt `dist/Watt.dmg`, und `demo.sh` simuliert Stromzustände, damit du die Ansichten ohne Netzteil prüfen kannst.
+`build.sh` erstellt `Watt.app`, `make-dmg.sh` erstellt `dist/Watt.dmg`, und `demo.sh` simuliert Stromzustände, damit du die Ansichten ohne Netzteil prüfen kannst. `preview.sh` öffnet Watt Preview, eine separate App mit Schiebereglern für jeden Zustand, damit du Symbol und Panel mit Beispielwerten prüfen kannst.
 
 ## Hinweise
 

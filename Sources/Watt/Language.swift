@@ -8,9 +8,11 @@ enum AppLanguage: String, CaseIterable, Identifiable {
 /// Language setting. In system mode, an unsupported language falls back to English.
 final class Language: ObservableObject {
     static let shared = Language()
+    /// The preview app turns this off so trying languages doesn't change Watt's saved setting.
+    static var persists = true
 
     @Published var setting: AppLanguage {
-        didSet { try? setting.rawValue.write(to: file, atomically: true, encoding: .utf8) }
+        didSet { if Self.persists { try? setting.rawValue.write(to: file, atomically: true, encoding: .utf8) } }
     }
     private let file = Storage.directory.appendingPathComponent("language")
 

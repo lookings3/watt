@@ -56,9 +56,10 @@ Xcodeが必要です。
 ./build.sh
 ./make-dmg.sh
 ./demo.sh
+./preview.sh
 ```
 
-`build.sh`は`Watt.app`を、`make-dmg.sh`は`dist/Watt.dmg`を作成します。`demo.sh`は電源の状態をシミュレートするので、充電器がなくても画面を確認できます。
+`build.sh`は`Watt.app`を、`make-dmg.sh`は`dist/Watt.dmg`を作成します。`demo.sh`は電源の状態をシミュレートするので、充電器がなくても画面を確認できます。`preview.sh`は、すべての状態をスライダーで切り替えられる別アプリWatt Previewを開き、アイコンとパネルを仮の値で確認できます。
 
 ## 補足
 

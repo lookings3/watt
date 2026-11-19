@@ -132,9 +132,9 @@ func render(to dir: String) {
         ("icon-72-light.png", 72, false, false, false), ("icon-72-dark.png", 72, false, false, true),
         ("icon-100.png", 100, false, false, true), ("icon-8.png", 8, false, false, true),
         ("icon-low.png", 45, false, true, true), ("icon-charging.png", 72, true, false, true),
-        ("icon-low-charging.png", 100, true, true, false), ("icon-plugged.png", 72, false, false, true), ("icon-low-96-light.png", 96, false, true, false), ("icon-96-light.png", 96, false, false, false), ("icon-low-100-light.png", 100, true, true, false), ("icon-charging-light.png", 72, true, false, false), ("icon-plugged-light.png", 72, false, false, false), ("icon-100-charging-light.png", 100, true, false, false), ("icon-low-charging-72-light.png", 72, true, true, false),
+        ("icon-low-charging.png", 100, true, true, false), ("icon-plugged.png", 72, false, false, true), ("icon-low-96-light.png", 96, false, true, false), ("icon-96-light.png", 96, false, false, false), ("icon-low-100-light.png", 100, true, true, false), ("icon-charging-light.png", 72, true, false, false), ("icon-plugged-light.png", 72, false, false, false), ("icon-100-charging-light.png", 100, true, false, false), ("icon-low-charging-72-light.png", 72, true, true, false), ("icon-plugged-99-light.png", 99, false, false, false), ("icon-charging-99-light.png", 99, true, false, false), ("icon-100-light.png", 100, false, false, false), ("icon-100-charging-light2.png", 100, true, false, false), ("icon-8-charging-light.png", 8, true, false, false),
     ]
-    let w = 150, h = 84
+    let w = 156, h = 84
     for (name, level, charging, low, dark) in cases {
         let image = batteryIcon(percent: level, charging: charging, plugged: name.hasPrefix("icon-plugged"), lowPower: low, dark: dark)
         let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: w, pixelsHigh: h, bitsPerSample: 8, samplesPerPixel: 4,
@@ -182,6 +182,10 @@ if let i = args.firstIndex(of: "--set-keep"), i + 1 < args.count {
 if let i = args.firstIndex(of: "--set-login"), i + 1 < args.count {
     LaunchAgent.setLogin(args[i + 1] == "on")
     exit(0)
+}
+
+if args.contains("--preview") || Bundle.main.bundleIdentifier == "local.watt.preview" {
+    runPreview()
 }
 
 // Doesn't start a second copy.

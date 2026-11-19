@@ -56,9 +56,10 @@ Requires Xcode.
 ./build.sh
 ./make-dmg.sh
 ./demo.sh
+./preview.sh
 ```
 
-`build.sh` creates `Watt.app`, `make-dmg.sh` creates `dist/Watt.dmg`, and `demo.sh` simulates power states so you can check the screens without a charger.
+`build.sh` creates `Watt.app`, `make-dmg.sh` creates `dist/Watt.dmg`, and `demo.sh` simulates power states so you can check the screens without a charger. `preview.sh` opens Watt Preview, a separate app with sliders for every state, so you can check the icon and panel with made-up values.
 
 ## Notes
 

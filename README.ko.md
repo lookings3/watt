@@ -56,9 +56,10 @@ Xcode가 필요합니다.
 ./build.sh
 ./make-dmg.sh
 ./demo.sh
+./preview.sh
 ```
 
-`build.sh`는 `Watt.app`을, `make-dmg.sh`는 `dist/Watt.dmg`를 만듭니다. `demo.sh`는 충전 상태를 흉내 내어 화면을 확인합니다.
+`build.sh`는 `Watt.app`을, `make-dmg.sh`는 `dist/Watt.dmg`를 만듭니다. `demo.sh`는 충전 상태를 흉내 내어 화면을 확인합니다. `preview.sh`는 모든 상태를 슬라이더로 바꿔 보는 별도 앱 Watt Preview를 열어, 아이콘과 패널을 가상의 값으로 확인할 수 있게 합니다.
 
 ## 알아둘 점
 

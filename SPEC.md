@@ -15,7 +15,7 @@ Work like the macOS battery menu, and add power flow, temperature, and history.
 ### 2.1 Menu bar icon
 
 - Shows a battery icon with the level inside it. Its size and digit weight match the macOS battery icon.
-- Shows a bolt while charging, and a plug when plugged in but not charging. The number and symbol shrink slightly while a symbol is shown so they don't crowd.
+- Shows a bolt while charging, and a plug when plugged in but not charging. The body, tip and 9.75pt medium digits are measured to match the macOS icon, and only a three-digit number with a symbol uses smaller 8.25pt digits. Layout uses the visible shape of the digits and symbol so they stay centered.
 - Turns yellow in Low Power Mode, with the level drawn in black so it stays readable on a light menu bar.
 - Reads Low Power Mode from the system, so changes made outside the app appear immediately.
 

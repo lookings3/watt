@@ -52,7 +52,7 @@ final class MenuPanelController {
         }
         window.orderFrontRegardless()
         window.makeKey()
-        DispatchQueue.main.async { button.highlight(true) }
+        if #unavailable(macOS 27.0) { DispatchQueue.main.async { button.highlight(true) } }
         watchForDismissal()
         onOpen()
     }
@@ -67,7 +67,7 @@ final class MenuPanelController {
         window.orderOut(nil)
         self.window = nil
         host = nil
-        button?.highlight(false)
+        if #unavailable(macOS 27.0) { button?.highlight(false) }
         closedAt = Date()
         onClose()
     }

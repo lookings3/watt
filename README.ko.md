@@ -50,7 +50,7 @@ rm -rf ~/Library/Application\ Support/Watt
 
 ## 빌드
 
-Xcode가 필요합니다.
+macOS 27 SDK가 들어 있는 Xcode가 필요합니다.
 
 ```bash
 ./build.sh

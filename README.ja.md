@@ -50,7 +50,7 @@ rm -rf ~/Library/Application\ Support/Watt
 
 ## ビルド
 
-Xcodeが必要です。
+macOS 27 SDKを含むXcodeが必要です。
 
 ```bash
 ./build.sh

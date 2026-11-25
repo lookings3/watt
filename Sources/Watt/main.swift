@@ -4,16 +4,22 @@ import Combine
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let model = Model()
-    private var item: NSStatusItem!
-    private let menu = MenuPanelController()
+    fileprivate var item: NSStatusItem!
+    fileprivate let menu = MenuPanelController()
     private var bag = Set<AnyCancellable>()
     private var appearanceObservation: NSKeyValueObservation?
     private var settingsWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ note: Notification) {
         item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        item.button?.target = self
-        item.button?.action = #selector(togglePopover)
+        if #available(macOS 27.0, *) {
+            // The system tracks the open panel, so it draws the same pressed background as Wi-Fi and Bluetooth.
+            item.expandedInterfaceDelegate = self
+            menu.onClose = { [weak self] in self?.item.expandedInterfaceSession?.cancel() }
+        } else {
+            item.button?.target = self
+            item.button?.action = #selector(togglePopover)
+        }
         item.button?.imagePosition = .imageOnly
 
         menu.onOpen = { [weak self] in self?.model.panelOpened() }
@@ -66,6 +72,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // Builds the panel on open and releases it on close so nothing renders while it's closed.
             menu.show(PanelView(model: model), below: button)
         }
+    }
+}
+
+@available(macOS 27.0, *)
+extension AppDelegate: NSStatusItemExpandedInterfaceDelegate {
+    func statusItem(_ statusItem: NSStatusItem, didBegin expandedInterfaceSession: NSStatusItemExpandedInterfaceSession) {
+        guard let button = statusItem.button else { return }
+        menu.show(PanelView(model: model), below: button)
+    }
+
+    func statusItemDidEndExpandedInterfaceSession(_ statusItem: NSStatusItem, animated: Bool) {
+        menu.close()
     }
 }
 

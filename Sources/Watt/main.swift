@@ -78,6 +78,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 @available(macOS 27.0, *)
 extension AppDelegate: NSStatusItemExpandedInterfaceDelegate {
     func statusItem(_ statusItem: NSStatusItem, didBegin expandedInterfaceSession: NSStatusItemExpandedInterfaceSession) {
+        // The outside-click monitor can close the panel just before the same icon click reaches the system,
+        // which would then reopen it. A panel that closed a moment ago stays closed.
+        if menu.justClosed {
+            expandedInterfaceSession.cancel()
+            return
+        }
         guard let button = statusItem.button else { return }
         menu.show(PanelView(model: model), below: button)
     }

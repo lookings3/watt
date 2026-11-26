@@ -116,8 +116,9 @@ final class MenuPanelController {
     /// Closes on a click elsewhere, the Escape key, or a Space change, like a menu.
     private func watchForDismissal() {
         if let global = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown], handler: { [weak self] _ in
-            // A click on the icon itself is left to the icon, which toggles the panel.
-            if let iconFrame = self?.button?.window?.frame, iconFrame.contains(NSEvent.mouseLocation) { return }
+            // On macOS 27 the menu bar hosts the icon in another process, so clicks on it arrive here too.
+            // The system doesn't end the session on a second click, so a click on the icon closes the panel as well.
+            if #unavailable(macOS 27.0), let iconFrame = self?.button?.window?.frame, iconFrame.contains(NSEvent.mouseLocation) { return }
             self?.close()
         }) { monitors.append(global) }
         if let local = NSEvent.addLocalMonitorForEvents(matching: [.keyDown], handler: { [weak self] event in
@@ -129,3 +130,4 @@ final class MenuPanelController {
             forName: NSWorkspace.activeSpaceDidChangeNotification, object: nil, queue: .main) { [weak self] _ in self?.close() })
     }
 }
+
